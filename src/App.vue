@@ -107,7 +107,7 @@
     // 将字符串格式 转换为 JSON 对象
     for (const items in jsonResult){
       // console.log(items)
-      const foundItem = jsonResult[items].find((item,index)=>{
+      const foundItem = jsonResult[items].find((item)=>{
         // console.log(item.款号 , id)
         return item.款号 === id
       })
