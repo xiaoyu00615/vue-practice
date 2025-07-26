@@ -24,6 +24,8 @@ npm run dev
 
 ### Compile and Minify for Production
 
+
+### 打包完成后直接变为单文件 可直接打开
 ```sh
 npm run build
 ```

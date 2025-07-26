@@ -1,5 +1,5 @@
 <script setup>
-  import {ref} from "vue";
+import {reactive, ref} from "vue";
   import * as XLSX from 'xlsx'
   // input 元素
   const fileInput = ref(null)
@@ -21,6 +21,8 @@
   // 文件数据
   const tableData = ref(null)
 
+  // 查询过的数据
+  const allFind = reactive([])
 
   // 提取渲染数据
   const getAnimateData = ref({
@@ -164,10 +166,28 @@
   // 修改
   function updataData(jsonResult){
 
-    const id = intValue.value.value
-    console.log(jsonResult)
+    // 强制大写
+    const id = intValue.value.value.toString().toUpperCase()
+
+    if (!id) {
+      alert("款号不能为空！ 请输入")
+      return
+    }
+
+
+    // 判断是否重复
+    if (!allFind.includes(id)){
+      allFind.push(id)
+    }
+    console.log(allFind)
+
+
+
+
+    // console.log(allFind)
+    // console.log(jsonResult)
     const itemData =  findData(jsonResult,id)
-    console.log(itemData)
+    // console.log(itemData)
     getAnimateData.value = {
       from:itemData.sheetname,
       id:itemData.data.款号,
@@ -196,34 +216,53 @@
 </script>
 
 <template>
-  <div class="local_data">
-    <p>缓存文件数据：{{ tableName ? tableName : '暂时没有缓存' }}</p>
-  </div>
-  <div class="submit_file">
-    <input type="file" ref="fileInput" @change="handleFileChange">
-    <button @click="handleSubmit">提交</button>
-  </div>
+  <div class="container">
+    <div class="local_data">
+      <p>缓存文件数据：{{ tableName ? tableName : '暂时没有缓存' }}</p>
+    </div>
+    <div class="submit_file">
+      <input type="file" ref="fileInput" @change="handleFileChange">
+      <button @click="handleSubmit">提交</button>
+    </div>
 
-  <div class="int_content">
-    <label for="int_id">输入货号：</label>
-    <input id="int_id" type="text" placeholder="请输入" ref="intValue">
-    <button v-if="hasStartFind" @click="updataData(jsonResult)">开始查找</button>
-  </div>
+    <div class="int_content">
+      <label for="int_id">输入款号：</label>
+      <input id="int_id" type="text" placeholder="请输入款号" ref="intValue">
+      <button v-if="hasStartFind" @click="updataData(jsonResult)">开始查找</button>
+    </div>
 
-  <div class="animate_data">
-    <p>来自：{{ getAnimateData.from }}</p>
-    <p>款号：{{ getAnimateData.id }}</p>
-    <p>现折扣：{{ getAnimateData.rediscount }}</p>
-    <p>标准价：{{ getAnimateData.standard_price }}</p>
-    <p>系列：{{ getAnimateData.series }}</p>
+    <div class="animate_data">
+      <p>来源：{{ getAnimateData.from }}</p>
+      <p>款号：{{ getAnimateData.id }}</p>
+      <p>现折扣：{{ getAnimateData.rediscount }}</p>
+      <p>标准价：{{ getAnimateData.standard_price }}</p>
+      <p>系列：{{ getAnimateData.series }}</p>
+    </div>
+
+    <div class="table_list">
+      <p class="find">历史查询记录：</p>
+      <ol>
+        <li v-for="item in allFind">{{ item }}</li>
+      </ol>
+    </div>
   </div>
 
 </template>
 
 <style>
+  *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .container{
+    padding: 20px 15px;
+  }
+
   .submit_file{
     width: 100%;
-    height: 80px;
+    height: 85px;
     display: flex;
     align-items: center;
   }
@@ -240,6 +279,20 @@
   .animate_data{
     border-bottom: 2px dashed #000;
     margin-top: 20px;
+  }
+
+  .animate_data p{
+    height: 40px;
+  }
+
+  .table_list .find{
+    font-size: 18px;
+    margin: 20px 0px 5px;
+  }
+
+  li{
+    height: 30px;
+    margin: 5px 20px 0px 30px;
   }
 
 </style>
