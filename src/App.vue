@@ -14,6 +14,14 @@
   // 显示开始查找
   const hasStartFind = ref(false)
 
+
+  // 本地数据
+  //文件名称
+  const tableName = ref(null)
+  // 文件数据
+  const tableData = ref(null)
+
+
   // 提取渲染数据
   const getAnimateData = ref({
     from:'',
@@ -23,6 +31,22 @@
     series:''
   })
 
+  init()
+
+  function init(){
+
+    if (getData()){
+      // 保存数据
+      jsonResult.value = tableData.value
+      // 可以进行查找
+      hasStartFind.value = true
+    }else{
+      console.log("没有数据")
+      console.log(tableName.value,tableData.value)
+    }
+  }
+
+
 
   // 处理文件的选择
   function handleFileChange(){
@@ -30,7 +54,10 @@
     if (file){
       selectedFile.value = file
     }
-    console.log(selectedFile.value)
+
+    hasStartFind.value = false
+    // console.log(selectedFile.value)
+
   }
 
   // 提交
@@ -42,7 +69,8 @@
     }
 
     // 获取文件后缀名
-    const fileExt = selectedFile.value.name.split(".")[1]
+    const fileExtSplit = selectedFile.value.name.split(".")
+    const fileExt = fileExtSplit[fileExtSplit.length - 1]
 
     // 文件格式筛选
     if (!['xlsx', 'xls'].includes(fileExt)){
@@ -52,6 +80,7 @@
 
     console.log("符合条件")
     convertToJson()
+
 
 
     // 可以进行查找
@@ -89,7 +118,13 @@
           // 格式化 JSON结果
           jsonResult.value = JSON.stringify(allSheetsData,null,2)
           jsonResult.value = JSON.parse(jsonResult.value)
-          // console.log(jsonResult.value)
+
+
+          // 保存到本地 数据格式 , 文件名
+          saveData(jsonResult.value,selectedFile.value.name)
+          // 获取刷新页面数据
+          getData()
+          console.log(jsonResult.value,selectedFile.value.name)
         })
       } catch (e){
         alert("解析失败"+e.message)
@@ -103,12 +138,14 @@
   }
 
 
+  // 查找
   function findData(jsonResult,id){
     // 将字符串格式 转换为 JSON 对象
     for (const items in jsonResult){
       // console.log(items)
       const foundItem = jsonResult[items].find((item)=>{
         // console.log(item.款号 , id)
+        console.log(items)
         return item.款号 === id
       })
 
@@ -124,10 +161,11 @@
     }
   }
 
+  // 修改
   function updataData(jsonResult){
 
     const id = intValue.value.value
-
+    console.log(jsonResult)
     const itemData =  findData(jsonResult,id)
     console.log(itemData)
     getAnimateData.value = {
@@ -139,10 +177,28 @@
     }
   }
 
+  // 保存到本地存储
+  function saveData(objData,name){
+    localStorage.setItem('tableData',JSON.stringify(objData))
+    localStorage.setItem('tableName',name)
+  }
+
+  function getData(){
+    tableData.value = JSON.parse(localStorage.getItem('tableData'))
+    tableName.value = localStorage.getItem('tableName')
+    if (tableData.value === null || tableName.value === null){
+      return false
+    }
+    return true
+  }
+
 
 </script>
 
 <template>
+  <div class="local_data">
+    <p>缓存文件数据：{{ tableName ? tableName : '暂时没有缓存' }}</p>
+  </div>
   <div class="submit_file">
     <input type="file" ref="fileInput" @change="handleFileChange">
     <button @click="handleSubmit">提交</button>
@@ -167,10 +223,23 @@
 <style>
   .submit_file{
     width: 100%;
-    height: 60px;
+    height: 80px;
     display: flex;
     align-items: center;
   }
 
+  button{
+    width: 80px;
+    height: 35px;
+  }
+
+  #int_id{
+    height: 30px;
+  }
+
+  .animate_data{
+    border-bottom: 2px dashed #000;
+    margin-top: 20px;
+  }
 
 </style>

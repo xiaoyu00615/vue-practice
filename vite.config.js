@@ -1,27 +1,22 @@
-import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue';
-import legacy from '@vitejs/plugin-legacy';
-import vueDevTools from 'vite-plugin-vue-devtools'
+import vue from '@vitejs/plugin-vue'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
-// https://vite.dev/config/
 export default defineConfig({
-  // 关键配置：设置资源基础路径为相对路径
-  base: './',
+  base: './', // 相对路径
   plugins: [
     vue(),
-    // 处理兼容性（支持旧浏览器，本地打开也需要）
-    legacy({
-      targets: ['ie >= 11'],
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime']
-    }),
-    // 可选：Vue 开发者工具插件
-    vueDevTools()
+    viteSingleFile() // 内联所有资源到单个HTML
   ],
-  resolve: {
-    alias: {
-      // 若有路径别名需求，保持默认配置即可
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife', // 生成自执行函数（无模块化）
+        inlineDynamicImports: true // 合并所有代码，避免动态加载
+      }
+    },
+    modulePreload: {
+      polyfill: false // 禁用模块预加载
     }
   }
 })
